@@ -1,9 +1,7 @@
 import 'dart:convert';
-import 'dart:developer';
 import 'package:flutter/material.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:http/http.dart' as http;
 import 'package:flutter_stripe/flutter_stripe.dart';
+import 'package:http/http.dart' as http;
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
@@ -26,7 +24,7 @@ class _HomeScreenState extends State<HomeScreen> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             TextButton(
-              child: const Text('Make Payment'),
+              child: const Text('Buy Now'),
               onPressed: () async {
                 await makePayment();
               },
@@ -40,66 +38,36 @@ class _HomeScreenState extends State<HomeScreen> {
   Future<void> makePayment() async {
     try {
       paymentIntent = await createPaymentIntent('100', 'USD');
+      print("2");
+      print(paymentIntent);
+
+      var gpay = PaymentSheetGooglePay(merchantCountryCode: "US",
+          currencyCode: "US",
+          testEnv: true);
 
       //STEP 2: Initialize Payment Sheet
       await Stripe.instance
           .initPaymentSheet(
-              paymentSheetParameters: SetupPaymentSheetParameters(
-                  paymentIntentClientSecret: paymentIntent![
-                      'client_secret'], //Gotten from payment intent
-                  style: ThemeMode.dark,
-                  merchantDisplayName: 'Ikay'))
+          paymentSheetParameters: SetupPaymentSheetParameters(
+              paymentIntentClientSecret: paymentIntent![
+              'client_secret'], //Gotten from payment intent
+              style: ThemeMode.light,
+              merchantDisplayName: 'Abhi',
+              googlePay: gpay))
           .then((value) {});
 
       //STEP 3: Display Payment sheet
       displayPaymentSheet();
     } catch (err) {
-      throw Exception(err);
+      print(err);
     }
   }
 
   displayPaymentSheet() async {
     try {
       await Stripe.instance.presentPaymentSheet().then((value) {
-        showDialog(
-            context: context,
-            builder: (_) => AlertDialog(
-                  content: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(
-                        Icons.check_circle,
-                        color: Colors.green,
-                        size: 100.0,
-                      ),
-                      SizedBox(height: 10.0),
-                      Text("Payment Successful!"),
-                    ],
-                  ),
-                ));
-
-        paymentIntent = null;
-      }).onError((error, stackTrace) {
-        throw Exception(error);
+        print("Payment Successfully");
       });
-    } on StripeException catch (e) {
-      print('Error is:---> $e');
-      AlertDialog(
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Row(
-              children: const [
-                Icon(
-                  Icons.cancel,
-                  color: Colors.red,
-                ),
-                Text("Payment Failed"),
-              ],
-            ),
-          ],
-        ),
-      );
     } catch (e) {
       print('$e');
     }
@@ -107,29 +75,27 @@ class _HomeScreenState extends State<HomeScreen> {
 
   createPaymentIntent(String amount, String currency) async {
     try {
-      //Request body
+      print("1");
       Map<String, dynamic> body = {
-        'amount': calculateAmount(amount),
+        'amount': amount,
         'currency': currency,
       };
 
-      //Make post request to Stripe
       var response = await http.post(
         Uri.parse('https://api.stripe.com/v1/payment_intents'),
         headers: {
-          'Authorization': 'Bearer ${dotenv.env['STRIPE_SECRET']}',
+          'Authorization': 'Bearer sk_test_51Mp3sVH3z9jiRVAKpEBmLnv4ViybTFSivSCwsFCCPwNGqr8pWR9N4RgkREecSRKQ0ra3TPYgIGEYJg84ojKQShKy00Xb7XDIIy',
           'Content-Type': 'application/x-www-form-urlencoded'
         },
         body: body,
       );
       return json.decode(response.body);
-    } catch (err) {
+    }
+    catch (err) {
+      print("11");
       throw Exception(err.toString());
     }
   }
 
-  calculateAmount(String amount) {
-    final calculatedAmout = (int.parse(amount)) * 100;
-    return calculatedAmout.toString();
-  }
+
 }

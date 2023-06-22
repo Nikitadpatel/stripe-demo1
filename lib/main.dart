@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_stripe/flutter_stripe.dart';
+import 'package:stripedemo/paypal.dart';
 
 import 'homescreen.dart';
 
@@ -10,10 +11,10 @@ void main() async {
 
   //Assign publishable key to flutter_stripe
   Stripe.publishableKey =
-      "pk_test_51LjocGK8ksAoxFf2T3BnkDu57BM1Kk0KEh5Y8iOOSNS3gH0liQx46AKTKh22UfOum4EtUC5pbHsnR5PfXbwJ2MtD00v11UEdVv";
+      "pk_test_51Mp3sVH3z9jiRVAKUVXj8vvJW5kM0zV6QXlxZeluYV00wTbxRhsTa9Qe5RCiHTVTEJDqtckmVE1GwLkDkNUeVkZZ004BvHvhbr";
 
   //Load our .env file that contains our Stripe Secret key
-  await dotenv.load(fileName: "assets/.env");
+
 
   runApp(MyApp());
 }
@@ -26,7 +27,7 @@ class MyApp extends StatelessWidget {
         primarySwatch: Colors.green,
       ),
       //initial route
-      home: HomeScreen(),
+      home: paypal(),
     );
   }
 }
